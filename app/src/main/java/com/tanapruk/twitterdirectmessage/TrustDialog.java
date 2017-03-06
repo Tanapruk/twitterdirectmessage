@@ -34,4 +34,5 @@ public class TrustDialog {
         dialog.show(fragmentManager, TAG_AIS_DIALOG);
     }
 
+
 }

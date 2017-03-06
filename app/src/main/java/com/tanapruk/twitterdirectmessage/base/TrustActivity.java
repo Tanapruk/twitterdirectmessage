@@ -1,11 +1,15 @@
-package com.tanapruk.twitterdirectmessage;
+package com.tanapruk.twitterdirectmessage.base;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.tanapruk.twitterdirectmessage.R;
+import com.tanapruk.twitterdirectmessage.TrustDialog;
+import com.tanapruk.twitterdirectmessage.TrustTwitter;
+
 import twitter4j.Twitter;
 
-public class TrustActivity extends AppCompatActivity {
+abstract public class TrustActivity extends AppCompatActivity {
 
 
 

@@ -11,7 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".LoginActivity">
+        <activity android:name=".activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -28,11 +28,11 @@
 
             <service android:name=".TimelineService"/>
         </activity>
-        <activity android:name=".TrustActivity">
+        <activity android:name=".base.TrustActivity">
         </activity>
         <activity
             android:theme="@style/Theme.AppCompat.NoActionBar"
-            android:name=".TimeLineActivity">
+            android:name=".activity.HomeActivity">
 
         </activity>
     </application>

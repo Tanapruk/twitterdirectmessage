@@ -1,4 +1,4 @@
-package com.tanapruk.twitterdirectmessage;
+package com.tanapruk.twitterdirectmessage.activity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -9,6 +9,10 @@ import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+
+import com.tanapruk.twitterdirectmessage.R;
+import com.tanapruk.twitterdirectmessage.TrustTwitter;
+import com.tanapruk.twitterdirectmessage.base.TrustActivity;
 
 import rx.Single;
 import rx.SingleSubscriber;
@@ -92,7 +96,7 @@ public class LoginActivity extends TrustActivity {
 
     private void gotoTimeline() {
         ActivityCompat.finishAffinity(this);
-        Intent intent = new Intent(this, TimeLineActivity.class);
+        Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
     }
 

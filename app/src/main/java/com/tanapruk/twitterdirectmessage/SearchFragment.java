@@ -1,19 +1,18 @@
 package com.tanapruk.twitterdirectmessage;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.tanapruk.twitterdirectmessage.base.TrustFragment;
 import com.tanapruk.twitterdirectmessage.model.TimeLineItem;
 
 import java.util.ArrayList;
@@ -30,38 +29,50 @@ import rx.schedulers.Schedulers;
 import twitter4j.Status;
 import twitter4j.TwitterException;
 
-public class TimeLineActivity extends TrustActivity {
+/**
+ * Created by trusttanapruk on 3/6/2017.
+ */
 
+public class SearchFragment extends TrustFragment {
     RecyclerView rvTimeline;
-    List<TimeLineItem> timeLineItemList;
     TimeLineAdapter timelineAdapter;
-    Toolbar toolbar;
+    List<TimeLineItem> timeLineItemList;
     Button btnTweet;
-    Spinner spnSwitch;
     EditText etTweet;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_time_line);
-        rvTimeline = (RecyclerView) findViewById(R.id.rv_timeline);
-        rvTimeline.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false));
-        toolbar = (Toolbar) findViewById(R.id.toolbar_timeline);
-        spnSwitch = (Spinner) findViewById(R.id.spn_switch_fragment);
-        etTweet = (EditText) findViewById(R.id.et_tweet);
-        btnTweet = (Button) findViewById(R.id.btn_tweet);
-        btnTweet.setOnClickListener(v -> tweet());
-        List<String> spinnerItemList = new ArrayList<>();
-        spinnerItemList.add("Timeline");
-        spinnerItemList.add("Direct Message");
-        ArrayAdapter arrayAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, spinnerItemList);
+    public static SearchFragment newInstance() {
 
-        spnSwitch.setAdapter(arrayAdapter);
-        spnSwitch.setOnItemSelectedListener(onSpnSwitchListener());
-        setSupportActionBar(toolbar);
-        setTitle("");
-        timeLineItemList = new ArrayList<>();
+        Bundle args = new Bundle();
+        SearchFragment fragment = new SearchFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_search, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+
+        super.onViewCreated(view, savedInstanceState);
+        rvTimeline = (RecyclerView) view.findViewById(R.id.rv_timeline);
+        rvTimeline.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext(), LinearLayoutManager.VERTICAL, false));
+        etTweet = (EditText) view.findViewById(R.id.et_tweet);
+        btnTweet = (Button) view.findViewById(R.id.btn_tweet);
+        btnTweet.setOnClickListener(v -> tweet());
         syncTimeline();
+
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        timeLineItemList = new ArrayList<>();
+
+
     }
 
     private void tweet() {
@@ -81,7 +92,7 @@ public class TimeLineActivity extends TrustActivity {
                     @Override
                     public void onSuccess(Status status) {
                         updateTimeline(status.getText(), status.getCreatedAt());
-                        Toast.makeText(TimeLineActivity.this, "You just tweeted " + status.getText(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "You just tweeted " + status.getText(), Toast.LENGTH_SHORT).show();
                         dismissLoading();
                         delayAndScroll();
                     }
@@ -93,21 +104,6 @@ public class TimeLineActivity extends TrustActivity {
                     }
                 });
 
-    }
-
-    @NonNull
-    private AdapterView.OnItemSelectedListener onSpnSwitchListener() {
-        return new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        };
     }
 
 
