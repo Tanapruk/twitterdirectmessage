@@ -37,8 +37,8 @@ public class SearchFragment extends TrustFragment {
     RecyclerView rvTimeline;
     TimeLineAdapter timelineAdapter;
     List<TimeLineItem> timeLineItemList;
-    Button btnTweet;
-    EditText etTweet;
+    Button btnSearch;
+    EditText etSearch;
 
     public static SearchFragment newInstance() {
 
@@ -58,12 +58,10 @@ public class SearchFragment extends TrustFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
         super.onViewCreated(view, savedInstanceState);
-        rvTimeline = (RecyclerView) view.findViewById(R.id.rv_timeline);
+        rvTimeline = (RecyclerView) view.findViewById(R.id.rv_search_result);
         rvTimeline.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext(), LinearLayoutManager.VERTICAL, false));
-        etTweet = (EditText) view.findViewById(R.id.et_tweet);
-        btnTweet = (Button) view.findViewById(R.id.btn_tweet);
-        btnTweet.setOnClickListener(v -> tweet());
-        syncTimeline();
+        etSearch = (EditText) view.findViewById(R.id.et_search);
+        btnSearch = (Button) view.findViewById(R.id.btn_search);
 
     }
 
@@ -76,8 +74,8 @@ public class SearchFragment extends TrustFragment {
     }
 
     private void tweet() {
-        String statusText = etTweet.getText().toString();
-        etTweet.setText("");
+        String statusText = etSearch.getText().toString();
+        etSearch.setText("");
         showLoading();
         Single.defer((Func0<Single<Status>>) () -> {
             try {

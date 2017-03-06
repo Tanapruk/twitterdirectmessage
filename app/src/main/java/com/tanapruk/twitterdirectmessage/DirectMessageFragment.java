@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.tanapruk.twitterdirectmessage.base.TrustFragment;
 import com.tanapruk.twitterdirectmessage.model.TimeLineItem;
@@ -34,11 +33,11 @@ import twitter4j.TwitterException;
  */
 
 public class DirectMessageFragment extends TrustFragment {
-    RecyclerView rvTimeline;
+    RecyclerView rvDirectMessage;
     TimeLineAdapter timelineAdapter;
     List<TimeLineItem> timeLineItemList;
-    Button btnTweet;
-    EditText etTweet;
+    Button btnSearch;
+    EditText etSearch;
 
     public static DirectMessageFragment newInstance() {
 
@@ -58,12 +57,11 @@ public class DirectMessageFragment extends TrustFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
         super.onViewCreated(view, savedInstanceState);
-        rvTimeline = (RecyclerView) view.findViewById(R.id.rv_timeline);
-        rvTimeline.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext(), LinearLayoutManager.VERTICAL, false));
-        etTweet = (EditText) view.findViewById(R.id.et_tweet);
-        btnTweet = (Button) view.findViewById(R.id.btn_tweet);
-        btnTweet.setOnClickListener(v -> tweet());
-        syncTimeline();
+        rvDirectMessage = (RecyclerView) view.findViewById(R.id.rv_search_result);
+        rvDirectMessage.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext(), LinearLayoutManager.VERTICAL, false));
+        etSearch = (EditText) view.findViewById(R.id.et_search);
+        btnSearch = (Button) view.findViewById(R.id.btn_search);
+        btnSearch.setOnClickListener(v -> tweet());
 
     }
 
@@ -76,8 +74,8 @@ public class DirectMessageFragment extends TrustFragment {
     }
 
     private void tweet() {
-        String statusText = etTweet.getText().toString();
-        etTweet.setText("");
+        String statusText = etSearch.getText().toString();
+        etSearch.setText("");
         showLoading();
         Single.defer((Func0<Single<Status>>) () -> {
             try {
@@ -92,7 +90,6 @@ public class DirectMessageFragment extends TrustFragment {
                     @Override
                     public void onSuccess(Status status) {
                         updateTimeline(status.getText(), status.getCreatedAt());
-                        Toast.makeText(getActivity(), "You just tweeted " + status.getText(), Toast.LENGTH_SHORT).show();
                         dismissLoading();
                         delayAndScroll();
                     }
@@ -130,7 +127,7 @@ public class DirectMessageFragment extends TrustFragment {
                             timeLineItemList.add(timeLineItem);
                         }
                         timelineAdapter = new TimeLineAdapter(timeLineItemList);
-                        rvTimeline.setAdapter(timelineAdapter);
+                        rvDirectMessage.setAdapter(timelineAdapter);
 
 
                     }
@@ -146,7 +143,7 @@ public class DirectMessageFragment extends TrustFragment {
     }
 
     public void scrollToTop() {
-        rvTimeline.scrollToPosition(0);
+        rvDirectMessage.scrollToPosition(0);
     }
 
     public void delayAndScroll() {
