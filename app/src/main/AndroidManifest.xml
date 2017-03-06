@@ -30,7 +30,10 @@
         </activity>
         <activity android:name=".TrustActivity">
         </activity>
-        <activity android:name=".TimeLineActivity">
+        <activity
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:name=".TimeLineActivity">
+
         </activity>
     </application>
 

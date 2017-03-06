@@ -19,6 +19,9 @@ import twitter4j.TwitterException;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 
+import static com.tanapruk.twitterdirectmessage.Constant.OAUTH_PAGE;
+
+
 public class LoginActivity extends TrustActivity {
 
 
@@ -43,7 +46,7 @@ public class LoginActivity extends TrustActivity {
         layoutTop = (View) findViewById(R.id.layout_top);
         btnSignin = (Button) findViewById(R.id.btn_signin);
         wvTwitterRedirect = (WebView) findViewById(R.id.wv_login);
-        initTwitterClient();
+        TrustTwitter.getInstance().initialize();
         btnSignin.setOnClickListener(v -> loginToTwitter());
         setupWebView();
 
@@ -98,7 +101,7 @@ public class LoginActivity extends TrustActivity {
         btnSignin.setEnabled(false);
         Single.defer((Func0<Single<RequestToken>>) () -> {
             try {
-                return Single.just(twitter.getOAuthRequestToken(OAUTH_PAGE));
+                return Single.just(getTwitter().getOAuthRequestToken(OAUTH_PAGE));
             } catch (TwitterException e) {
                 e.printStackTrace();
             }
@@ -133,7 +136,7 @@ public class LoginActivity extends TrustActivity {
         Single.defer((Func0<Single<AccessToken>>) () -> {
             try {
                 showLoading();
-                return Single.just(twitter.getOAuthAccessToken(requestToken, verifier));
+                return Single.just(getTwitter().getOAuthAccessToken(requestToken, verifier));
             } catch (TwitterException e) {
                 e.printStackTrace();
             }
