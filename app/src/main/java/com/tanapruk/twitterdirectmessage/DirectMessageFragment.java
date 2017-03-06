@@ -2,9 +2,7 @@ package com.tanapruk.twitterdirectmessage;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,13 +18,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
-import rx.Single;
-import rx.SingleSubscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func0;
 import rx.schedulers.Schedulers;
-import twitter4j.Status;
-import twitter4j.TwitterException;
 
 /**
  * Created by trusttanapruk on 3/6/2017.
@@ -58,10 +51,9 @@ public class DirectMessageFragment extends TrustFragment {
 
         super.onViewCreated(view, savedInstanceState);
         rvDirectMessage = (RecyclerView) view.findViewById(R.id.rv_search_result);
-        rvDirectMessage.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext(), LinearLayoutManager.VERTICAL, false));
+//        rvDirectMessage.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext(), LinearLayoutManager.VERTICAL, false));
         etSearch = (EditText) view.findViewById(R.id.et_search);
         btnSearch = (Button) view.findViewById(R.id.btn_search);
-        btnSearch.setOnClickListener(v -> tweet());
 
     }
 
@@ -73,74 +65,9 @@ public class DirectMessageFragment extends TrustFragment {
 
     }
 
-    private void tweet() {
-        String statusText = etSearch.getText().toString();
-        etSearch.setText("");
-        showLoading();
-        Single.defer((Func0<Single<Status>>) () -> {
-            try {
-                return Single.just(getTwitter().updateStatus(statusText));
-            } catch (TwitterException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleSubscriber<Status>() {
-                    @Override
-                    public void onSuccess(Status status) {
-                        updateTimeline(status.getText(), status.getCreatedAt());
-                        dismissLoading();
-                        delayAndScroll();
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        dismissLoading();
-                        error.printStackTrace();
-                    }
-                });
-
-    }
 
 
-    private void syncTimeline() {
-
-        showLoading();
-        Single.defer((Func0<Single<List<Status>>>) () -> {
-            try {
-                Log.d(getClass().getSimpleName(), "syncTimeline: requesting");
-                return Single.just(getTwitter().getHomeTimeline());
-            } catch (TwitterException e) {
-                e.printStackTrace();
-            }
-            Log.d(getClass().getSimpleName(), "syncTimeline: null");
-            return null;
-        }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleSubscriber<List<Status>>() {
-                    @Override
-                    public void onSuccess(List<Status> statusList) {
-                        dismissLoading();
-                        for (Status status : statusList) {
-                            TimeLineItem timeLineItem = new TimeLineItem(status.getText(), status.getCreatedAt());
-                            timeLineItemList.add(timeLineItem);
-                        }
-                        timelineAdapter = new TimeLineAdapter(timeLineItemList);
-                        rvDirectMessage.setAdapter(timelineAdapter);
-
-
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        dismissLoading();
-                        error.printStackTrace();
-                    }
-                });
-
-
-    }
+    
 
     public void scrollToTop() {
         rvDirectMessage.scrollToPosition(0);
