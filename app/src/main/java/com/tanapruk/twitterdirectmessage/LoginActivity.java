@@ -1,72 +1,67 @@
 package com.tanapruk.twitterdirectmessage;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-
-import java.util.List;
 
 import rx.Single;
 import rx.SingleSubscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func0;
 import rx.schedulers.Schedulers;
-import twitter4j.Status;
-import twitter4j.Twitter;
 import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
-import twitter4j.conf.ConfigurationBuilder;
 
-public class MainActivity extends TrustActivity {
+public class LoginActivity extends TrustActivity {
 
-    public final static String TWITTER_CONSUMER_KEY = "VSH2wsA0BBW7IlDP3wqLvU951";
-    public final static String TWIT_CONSUMER_SECRET = "boCM4IqCt09CvXeb1NprSqKywRZNNfb3yY04c3xs622D0rLJNu";
-    public final static String OAUTH_PAGE = "oauth:///tanapruk";
+
     private static RequestToken requestToken;
     private String requestUrl;
     private static String verifier;
-    private Twitter twitter;
     /**
      * request token for accessing user account
      */
 
     //for error logging
-
+    View layoutTop;
     Button btnSignin;
-    WebView mWebView;
+    WebView wvTwitterRedirect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setTitle("Login");
 
+        layoutTop = (View) findViewById(R.id.layout_top);
         btnSignin = (Button) findViewById(R.id.btn_signin);
-        mWebView = (WebView) findViewById(R.id.wv_login);
-        btnSignin.setOnClickListener(v -> loginToTwitter());
+        wvTwitterRedirect = (WebView) findViewById(R.id.wv_login);
         initTwitterClient();
+        btnSignin.setOnClickListener(v -> loginToTwitter());
         setupWebView();
 
     }
 
+
     private void setupWebView() {
         try {
-            mWebView.getSettings().setJavaScriptEnabled(true);
+            wvTwitterRedirect.getSettings().setJavaScriptEnabled(true);
         } catch (Exception e) {
 
         }
-        mWebView.getSettings().setAppCacheEnabled(false);
-        mWebView.getSettings().setSavePassword(false);
-        mWebView.getSettings().setSaveFormData(false);
-        mWebView.setWebViewClient(new WebViewClient() {
+        wvTwitterRedirect.getSettings().setAppCacheEnabled(false);
+        wvTwitterRedirect.getSettings().setSavePassword(false);
+        wvTwitterRedirect.getSettings().setSaveFormData(false);
+        wvTwitterRedirect.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView webView, String url) {
-                Log.v("login", "url: " + url);
                 if (url != null && url.startsWith(OAUTH_PAGE)) {
                     handleTwitterCallback(url);
                 } else if (url != null && url.equals("https://twitter.com/")) {
@@ -76,27 +71,31 @@ public class MainActivity extends TrustActivity {
                 }
                 return true;
             }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                showLoading();
+                super.onPageStarted(view, url, favicon);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                dismissLoading();
+            }
         });
     }
 
-    private void initTwitterClient() {
-        ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setDebugEnabled(true)
-                .setOAuthConsumerKey(TWITTER_CONSUMER_KEY)
-                .setOAuthConsumerSecret(TWIT_CONSUMER_SECRET);
 
-        TwitterFactory tf = new TwitterFactory(cb.build());
-        twitter = tf.getInstance();
+    private void gotoTimeline() {
+        ActivityCompat.finishAffinity(this);
+        Intent intent = new Intent(this, TimeLineActivity.class);
+        startActivity(intent);
     }
-
 
     private void loginToTwitter() {
 
-        if (btnSignin.getText().equals("Sync Now")) {
-            syncTimeline();
-            return;
-        }
-
+        btnSignin.setEnabled(false);
         Single.defer((Func0<Single<RequestToken>>) () -> {
             try {
                 return Single.just(twitter.getOAuthRequestToken(OAUTH_PAGE));
@@ -111,37 +110,9 @@ public class MainActivity extends TrustActivity {
                     public void onSuccess(RequestToken value) {
                         requestToken = value;
                         requestUrl = requestToken.getAuthenticationURL();
-                        mWebView.loadUrl(requestUrl);
-                        mWebView.setVisibility(View.VISIBLE);
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        error.printStackTrace();
-                    }
-                });
-
-
-    }
-
-    private void syncTimeline() {
-
-        Log.d(getClass().getSimpleName(), "syncTimeline: ");
-        Single.defer((Func0<Single<List<Status>>>) () -> {
-            try {
-                return Single.just(twitter.getHomeTimeline());
-            } catch (TwitterException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleSubscriber<List<Status>>() {
-                    @Override
-                    public void onSuccess(List<Status> statusList) {
-                        for (Status status : statusList) {
-                            Log.d(getClass().getSimpleName(), "onSuccess: " + status);
-                        }
+                        layoutTop.setVisibility(View.GONE);
+                        wvTwitterRedirect.loadUrl(requestUrl);
+                        wvTwitterRedirect.setVisibility(View.VISIBLE);
                     }
 
                     @Override
@@ -161,6 +132,7 @@ public class MainActivity extends TrustActivity {
 
         Single.defer((Func0<Single<AccessToken>>) () -> {
             try {
+                showLoading();
                 return Single.just(twitter.getOAuthAccessToken(requestToken, verifier));
             } catch (TwitterException e) {
                 e.printStackTrace();
@@ -173,16 +145,32 @@ public class MainActivity extends TrustActivity {
 
                     @Override
                     public void onSuccess(AccessToken value) {
-                        mWebView.setVisibility(View.GONE);
-                        btnSignin.setText("Sync Now");
+                        dismissLoading();
+                        wvTwitterRedirect.setVisibility(View.GONE);
+                        gotoTimeline();
                     }
 
                     @Override
                     public void onError(Throwable error) {
+                        dismissLoading();
                         error.printStackTrace();
                     }
                 });
 
     }
 
+    @Override
+    public void onBackPressed() {
+        if (wvTwitterRedirect.getVisibility() == View.VISIBLE) {
+            if (wvTwitterRedirect.canGoBack()) {
+                wvTwitterRedirect.goBack();
+                return;
+            } else {
+                wvTwitterRedirect.setVisibility(View.GONE);
+                btnSignin.setEnabled(true);
+                layoutTop.setVisibility(View.VISIBLE);
+                return;
+            }
+        }
+    }
 }
